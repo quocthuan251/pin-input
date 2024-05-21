@@ -36,5 +36,8 @@
     "vite": "^5.2.8",
     "vite-plugin-vue-devtools": "^7.0.25",
     "vitest": "^1.4.0"
-  }
+  },
+  "resolutions": {
+    "string-width": "4.2.3"
+ }
 }
