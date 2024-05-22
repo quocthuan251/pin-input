@@ -1,17 +1,42 @@
 <template>
-  <div>
-    <div>số ô input:</div>
-    <input
-      @input="changeLengthInput"
-      class="text-center border border-gray-300 rounded mr-1 focus:outline-none text-gray-950"
-      type="number"
-      min="1"
-      max="100"
-    />
+  <div class="flex gap-[10px] h-[45px]">
+    <div class="flex gap-[5px] h-[45px]">
+      <label
+        for="input_length"
+        class="flex text-sm font-medium text-gray-900 dark:text-white m-[auto]"
+        >Length:</label
+      >
+      <input
+        @input="changeLengthInput($event)"
+        id="input_length"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        type="number"
+        min="1"
+        max="100"
+        :value="inputLength"
+      />
+    </div>
+    <div class="flex gap-[5px] h-[45px]">
+      <label
+        for="input_type"
+        class="flex text-sm font-medium text-gray-900 dark:text-white w-[100%] m-[auto]"
+        >Type:
+      </label>
+      <select
+        id="input_type"
+        @change="changeTypeInput($event)"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-[155px] focus:outline-none focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        v-model="regex"
+      >
+        <option v-for="(item, index) in listRegex" :key="index" :value="item.value">
+          {{ item.label }}
+        </option>
+      </select>
+    </div>
   </div>
   <div class="flex flex-col items-center gap-4 h-[100%] justify-center">
     <h2 class="text-2xl font-bold">PIN Input</h2>
-    <div class="flex flex-wrap" v-if="pin.length">
+    <div class="flex flex-wrap gap-[5px]" v-if="pin.length">
       <input
         v-for="(_, index) in inputLength"
         :key="index"
@@ -23,7 +48,7 @@
         @paste="handlePaste($event, index)"
         :type="isSecretMode ? 'password' : 'text'"
         maxlength="1"
-        class="w-10 h-10 text-center border border-gray-300 rounded mr-1 focus:outline-none text-gray-950"
+        class="w-10 h-10 text-center border border-gray-300 rounded focus:outline-none text-gray-950"
         :class="{ mask: isSecretMode }"
         :style="{ caretColor: isSecretMode ? 'transparent' : 'auto' }"
         autocomplete="one-time-code"
@@ -49,7 +74,7 @@
             d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
           ></path>
         </svg>
-        <span class="text-green-800">Success! </span>
+        <span class="text-green-800">Success!</span>
       </div>
     </div>
   </div>
@@ -62,7 +87,20 @@ const inputs = ref([])
 const isSecretMode = ref(false)
 const isInputSuccess = ref(false)
 const regex = ref(/[^0-9]/g)
-// const regex = ref(/[^a-zA-Z]/g)
+const listRegex = [
+  {
+    label: 'Number',
+    value: /[^0-9]/g
+  },
+  {
+    label: 'Letter',
+    value: /[^a-zA-Z]/g
+  },
+  {
+    label: 'Number or Letter',
+    value: /[^a-zA-Z0-9]/g
+  }
+]
 
 const handleInput = (event, index) => {
   const input = event.target
@@ -74,8 +112,19 @@ const handleInput = (event, index) => {
 }
 const changeLengthInput = (event) => {
   if (event.target.value) {
-    pin.value = Array(Number(event.target.value)).fill('')
-    inputLength.value = Number(event.target.value)
+    if (Number(event.target.value) > 100) {
+      pin.value = Array(100).fill('')
+      inputLength.value = 100
+    } else {
+      pin.value = Array(Number(event.target.value)).fill('')
+      inputLength.value = Number(event.target.value)
+    }
+  }
+}
+
+const changeTypeInput = (event) => {
+  if (event.target.value != regex) {
+    pin.value = Array(inputLength.value).fill('')
   }
 }
 
@@ -100,7 +149,6 @@ const handlePaste = (event, index) => {
   const digits = pasteText.replace(regex.value, '')
 
   if (digits.length > 0) {
-    console.log('🚀 ~ handlePaste ~ digits.length:', digits.length)
     pin.value.splice(index, digits.length, ...digits.split(''))
     inputs.value[index + digits.length - 1].focus()
   }
